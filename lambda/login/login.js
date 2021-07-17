@@ -11,8 +11,6 @@ exports.handler = async function (event, context) {
         user: username
     }, 'mySecretToken', { expiresIn: '1h' });
     let responseBody = {
-        user: username,
-        basic_auth: userCred,
         access_token: accessToken,
         token_type: "Bearer",
         expires_in: 3600
