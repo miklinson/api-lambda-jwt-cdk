@@ -6,10 +6,13 @@ exports.handler = async function (event, context) {
     //Decode the credentials
     let data = new Buffer.from(replaced, 'base64').toString('ascii');
     let username = data.split(':')[0];
+    //Prepare JWT details
     let user = { user: username };
     let secret = process.env.ACCESS_TOKEN_SECRET;
+    let expireTime = process.env.EXPIRES_IN; //seconds
+    let expires = { expiresIn: expireTime }
     //Create a token
-    let accessToken = jwt.sign(user, secret, { expiresIn: '1h' });
+    let accessToken = jwt.sign(user, secret, expires);
     let responseBody = {
         access_token: accessToken,
         token_type: "Bearer",
