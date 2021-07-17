@@ -28,6 +28,7 @@ exports.handler = async function (event, context) {
 }
 
 function generateAuthResponse(principalId, effect, methodArn, errorMsg) {
+    let policyDocument;
     (errorMsg == null) ? policyDocument = errorMsg : policyDocument = generatePolicyDocument(effect, methodArn, errorMsg);
     return { principalId, policyDocument }
 }
