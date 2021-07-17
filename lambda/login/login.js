@@ -1,12 +1,28 @@
 const jwt = require('jsonwebtoken');
 exports.handler = async function (event, context) {
-    //Authenticate Users
+    //Get Credentials
+    let userCred = event.headers['Authorization'];
+    let replaced = userCred.replace('Basic ', '');
+    //Decode the credentials
+    let data = new Buffer.from(replaced, 'base64').toString('ascii');
+    let username = data.split(':')[0];
+    //Create a token
+    let accessToken = jwt.sign({
+        user: username
+    }, 'mySecretToken', { expiresIn: '1h' });
+    let responseBody = {
+        user: username,
+        basic_auth: userCred,
+        access_token: accessToken,
+        token_type: "Bearer",
+        expires_in: 3600
+    };
     let response = {
         statusCode: 200,
         headers: {
             "x-custom-header": "custom-header-value"
         },
-        body: JSON.stringify(event)
+        body: JSON.stringify(responseBody)
     };
     return response;
 }
