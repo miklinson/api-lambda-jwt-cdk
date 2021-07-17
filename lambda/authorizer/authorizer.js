@@ -6,31 +6,39 @@ exports.handler = async function (event, context) {
     let token = headerToken && headerToken.replace('Bearer ', '');
     //Check the JWT token
     let principal;
-    jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err,decoded)=>{
-        err ? auth='Deny' : auth='Allow'
-        decoded ? principal=decoded.user : principal='user';
+    let errorMessage = null;
+    jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, decoded) => {
+        if (err) {
+            errorMessage = err.message;
+            auth = 'Deny';
+        } else {
+            decoded ? principal = decoded.user : principal = 'user';
+            auth = 'Allow';
+        }
     });
-    console.log('Token is: ' + token);
-    console.log('Auth is:' + auth);
     //Get the ARN
     const methodArn = event.methodArn;
-    console.log('MethodArn is' + methodArn);
     //Authorizer
     switch (auth) {
         case 'Allow':
-            return generateAuthResponse(principal, 'Allow', methodArn);
+            return generateAuthResponse(principal, 'Allow', methodArn, errorMessage);
         default:
-            return generateAuthResponse(principal, 'Deny', methodArn);
+            return generateAuthResponse(principal, 'Deny', methodArn, errorMessage);
     }
 }
 
-function generateAuthResponse(principalId, effect, methodArn) {
-    const policyDocument = generatePolicyDocument(effect, methodArn);
+function generateAuthResponse(principalId, effect, methodArn, errorMsg) {
+    (errorMsg == null) ? policyDocument = errorMsg : policyDocument = generatePolicyDocument(effect, methodArn, errorMsg);
     return { principalId, policyDocument }
 }
 
-function generatePolicyDocument(effect, methodArn){
-    if(!effect || !methodArn) return null
+function generatePolicyDocument(effect, methodArn, errorMsg) {
+    if (!effect || !methodArn) {
+        response.context = {
+            'message': errorMsg
+        }
+        return response;
+    }
     const policyDocument = {
         Version: '2012-10-17',
         Statement: [
