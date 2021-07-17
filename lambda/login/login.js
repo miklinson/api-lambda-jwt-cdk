@@ -10,7 +10,7 @@ exports.handler = async function (event, context) {
     //Prepare JWT details
     let user = { user: username };
     let secret = process.env.ACCESS_TOKEN_SECRET;
-    let expireTime = process.env.EXPIRES_IN; //seconds
+    let expireTime = parseInt(process.env.EXPIRES_IN, 10); //seconds
     let expires = { expiresIn: expireTime }
     //Create a token
     let accessToken = jwt.sign(user, secret, expires);

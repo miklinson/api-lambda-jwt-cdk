@@ -5,18 +5,22 @@ exports.handler = async function (event, context) {
     let headerToken = event.headers['Authorization'];
     let token = headerToken && headerToken.replace('Bearer ', '');
     //Check the JWT token
-    jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err,user)=>{
-        if(err) auth='Deny';
-        else auth='Allow';
+    let principal;
+    jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err,decoded)=>{
+        err ? auth='Deny' : auth='Allow'
+        decoded ? principal=decoded.user : principal='user';
     });
+    console.log('Token is: ' + token);
+    console.log('Auth is:' + auth);
     //Get the ARN
     const methodArn = event.methodArn;
+    console.log('MethodArn is' + methodArn);
     //Authorizer
     switch (auth) {
         case 'Allow':
-            return generateAuthResponse('user', 'Allow', methodArn);
+            return generateAuthResponse(principal, 'Allow', methodArn);
         default:
-            return generateAuthResponse('user', 'Deny', methodArn);
+            return generateAuthResponse(principal, 'Deny', methodArn);
     }
 }
 
