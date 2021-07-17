@@ -2,7 +2,8 @@ const jwt = require('jsonwebtoken');
 exports.handler = async function (event, context) {
     //Get Credentials
     let userCred = event.headers['Authorization'];
-    let replaced = userCred.replace('Basic ', '');
+    //Check if authorization header exist and then replace
+    let replaced = userCred && userCred.replace('Basic ', '');
     //Decode the credentials
     let data = new Buffer.from(replaced, 'base64').toString('ascii');
     let username = data.split(':')[0];
