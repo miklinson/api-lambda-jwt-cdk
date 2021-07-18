@@ -40,9 +40,9 @@ exports.handler = async function (event, context) {
     const params = {
         TableName: 'token',
         Item: {
+            refreshToken: refreshToken,
             user: username,
             createTime: Date.now(),
-            refreshToken: refreshToken
         }
     }
     
