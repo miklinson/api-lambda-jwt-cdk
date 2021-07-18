@@ -58,7 +58,7 @@ exports.handler = async function (event, context) {
     if(ddbError) return response;
 
     //If no error, response body
-    let responseBody = {
+    responseBody = {
         access_token: accessToken,
         refresh_token: refreshToken,
         token_type: "Bearer",
