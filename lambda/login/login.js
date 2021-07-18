@@ -16,7 +16,7 @@ exports.handler = async function (event, context) {
     //Create an acess token
     let accessToken = jwt.sign(user, accessSecret, expires);
     //Create a refresh token
-    let refreshToken = jwt.sign(user, refreshToken); // no expiration for refresh token
+    let refreshToken = jwt.sign(user, refreshSecret); // no expiration for refresh token
     //Create response body
     let responseBody = {
         access_token: accessToken,
