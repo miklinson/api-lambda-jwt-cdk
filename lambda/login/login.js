@@ -3,6 +3,9 @@ const AWS = require('aws-sdk');
 const docClient = new AWS.DynamoDB.DocumentClient();
 
 exports.handler = async function (event, context) {
+    //Init variables
+    let ddbError = false;
+    let response = {};
     //Get Credentials
     let userCred = event.headers['Authorization'];
     //Check if authorization header exist and then replace
@@ -10,6 +13,15 @@ exports.handler = async function (event, context) {
     //Decode the credentials
     let data = new Buffer.from(replaced, 'base64').toString('ascii');
     let username = data.split(':')[0];
+    let password = data.split(':')[1];
+    //Check UN and PW
+    if(!username == 'admin' || !password == 'hashedpw') {
+        response = {
+            statusCode: 401,
+            body: "Wrong Credentials"
+        };
+        return response;
+    }
     //Prepare JWT details
     let user = { user: username };
     let accessSecret = process.env.ACCESS_TOKEN_SECRET;
@@ -28,8 +40,7 @@ exports.handler = async function (event, context) {
             refreshToken: refreshToken
         }
     }
-    let ddbError = false;
-    let response = {};
+    
     try {
         await createItem(params)
     } catch (err) {
