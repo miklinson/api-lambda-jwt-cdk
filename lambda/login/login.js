@@ -41,14 +41,15 @@ exports.handler = async function (event, context) {
         };
     }
     if(ddbError) return response;
-    //Create response body
+
+    //If no error, response body
     let responseBody = {
         access_token: accessToken,
         refresh_token: refreshToken,
         token_type: "Bearer",
         expires_in: expireTime
     };
-    let response = {
+    response = {
         statusCode: 200,
         body: JSON.stringify(responseBody)
     };
