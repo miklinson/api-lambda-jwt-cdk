@@ -6,6 +6,7 @@ exports.handler = async function (event, context) {
     //Init variables
     let ddbError = false;
     let response = {};
+    let responseBody = {};
     //Get Credentials
     let userCred = event.headers['Authorization'];
     //Check if authorization header exist and then replace
@@ -16,9 +17,12 @@ exports.handler = async function (event, context) {
     let password = data.split(':')[1];
     //Check UN and PW
     if(username != 'admin' || password != 'hashedpw') {
+        responseBody = {
+            message: "Invalid Credentials!"
+        }
         response = {
             statusCode: 401,
-            body: "Wrong Credentials"
+            body: JSON.stringify(responseBody)
         };
         return response;
     }
