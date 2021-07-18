@@ -9,13 +9,18 @@ exports.handler = async function (event, context) {
     let username = data.split(':')[0];
     //Prepare JWT details
     let user = { user: username };
-    let secret = process.env.ACCESS_TOKEN_SECRET;
-    let expireTime = parseInt(process.env.EXPIRES_IN, 10); //seconds
+    let accessSecret = process.env.ACCESS_TOKEN_SECRET;
+    let refreshSecret = process.env.REFRESH_TOKEN_SECRET;
+    let expireTime = parseInt(process.env.EXPIRES_IN, 10); //convert string to int
     let expires = { expiresIn: expireTime }
-    //Create a token
-    let accessToken = jwt.sign(user, secret, expires);
+    //Create an acess token
+    let accessToken = jwt.sign(user, accessSecret, expires);
+    //Create a refresh token
+    let refreshToken = jwt.sign(user, refreshToken); // no expiration for refresh token
+    //Create response body
     let responseBody = {
         access_token: accessToken,
+        refresh_token: refreshToken,
         token_type: "Bearer",
         expires_in: expireTime
     };
