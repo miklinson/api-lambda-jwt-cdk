@@ -41,6 +41,7 @@ exports.handler = async function (event, context) {
         TableName: 'token',
         Item: {
             user: username,
+            createTime: Date.now(),
             refreshToken: refreshToken
         }
     }
