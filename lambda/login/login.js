@@ -1,4 +1,7 @@
 const jwt = require('jsonwebtoken');
+const AWS = require('aws-sdk');
+const docClient = new AWS.DynamoDB.DocumentClient();
+
 exports.handler = async function (event, context) {
     //Get Credentials
     let userCred = event.headers['Authorization'];
@@ -17,6 +20,27 @@ exports.handler = async function (event, context) {
     let accessToken = jwt.sign(user, accessSecret, expires);
     //Create a refresh token
     let refreshToken = jwt.sign(user, refreshSecret); // no expiration for refresh token
+    //Save refresh token in DynamoDB
+    const params = {
+        TableName: 'token',
+        Item: {
+            user: username,
+            refreshToken: refreshToken
+        }
+    }
+    let ddbError = false;
+    let response = {};
+    try {
+        await createItem(params)
+    } catch (err) {
+        ddbError = true;
+        console.log(err);
+        response = {
+            statusCode: 500,
+            body: JSON.stringify(err)
+        };
+    }
+    if(ddbError) return response;
     //Create response body
     let responseBody = {
         access_token: accessToken,
@@ -26,10 +50,15 @@ exports.handler = async function (event, context) {
     };
     let response = {
         statusCode: 200,
-        headers: {
-            "x-custom-header": "custom-header-value"
-        },
         body: JSON.stringify(responseBody)
     };
     return response;
+}
+
+async function createItem(params) {
+    try {
+        await docClient.put(params).promise();
+    } catch (err) {
+        return err;
+    }
 }
