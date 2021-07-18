@@ -15,7 +15,7 @@ exports.handler = async function (event, context) {
     let username = data.split(':')[0];
     let password = data.split(':')[1];
     //Check UN and PW
-    if(!username == 'admin' || !password == 'hashedpw') {
+    if(username != 'admin' || password != 'hashedpw') {
         response = {
             statusCode: 401,
             body: "Wrong Credentials"
