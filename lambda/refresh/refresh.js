@@ -1,6 +1,6 @@
 const jwt = require('jsonwebtoken');
 exports.handler = async function (event, context) {
-    responseBody = event.body;
+    responseBody = JSON.stringify(event);
     console.log(responseBody);
     let response = {
         statusCode: 200,
