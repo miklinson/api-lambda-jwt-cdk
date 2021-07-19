@@ -4,7 +4,7 @@ const docClient = new AWS.DynamoDB.DocumentClient();
 
 exports.handler = async function (event, context) {
     //Init variables
-    let ddbError, verifyError, parseError = false;
+    let ddbError, verifyError, parseError, noToken = false;
     let jwtDecoded, data, refreshToken;
     let response, responseBody = {};
     //Get refresh_token in body
@@ -21,8 +21,8 @@ exports.handler = async function (event, context) {
             body: JSON.stringify(responseBody)
         };
     }
-    if(parseError) return response;
-    
+    if (parseError) return response;
+
     const params = {
         TableName: 'token',
         Key: {
@@ -32,10 +32,16 @@ exports.handler = async function (event, context) {
     //Try catch block
     try {
         data = await getItem(params);
-        response = {
-            statusCode: 200,
-            body: JSON.stringify(data)
-        };
+        if (!data.hasOwnProperty('Item')) {
+            noToken = true;
+            responseBody = {
+                "message": "refresh token not found!"
+            }
+            response = {
+                statusCode: 403,
+                body: JSON.stringify(data)
+            };
+        }
     } catch (err) {
         ddbError = true;
         response = {
@@ -43,8 +49,8 @@ exports.handler = async function (event, context) {
             body: JSON.stringify(err.message)
         };
     }
-    if (ddbError) return response;
-    return response; 
+    if (noToken) return response; //no refreshToken found in DynamoDB
+    if (ddbError) return response; //cath error during DynamoDB action
     //If no error, get the sign details and then create new access token
     jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET, (err, decoded) => {
         if (err) {
@@ -60,7 +66,7 @@ exports.handler = async function (event, context) {
             jwtDecoded = decoded.user;
         }
     });
-    if(verifyError) return response;
+    if (verifyError) return response;
 
     //If JWT verification succeeded
     let user = { user: jwtDecoded };
@@ -83,7 +89,7 @@ exports.handler = async function (event, context) {
 
 async function getItem(params) {
     try {
-       return await docClient.get(params).promise()
+        return await docClient.get(params).promise()
     } catch (err) {
         return err
     }
