@@ -8,7 +8,7 @@ exports.handler = async function (event, context) {
     let response = {};
     let responseBody = {};
     //Get refresh_token in body
-    const refreshToken = event.body.refresh_token;
+    const refreshToken = event.body['refresh_token'];
     const params = {
         TableName: 'token',
         Key: {
