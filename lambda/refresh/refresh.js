@@ -39,7 +39,7 @@ exports.handler = async function (event, context) {
             }
             response = {
                 statusCode: 403,
-                body: JSON.stringify(data)
+                body: JSON.stringify(responseBody)
             };
         }
     } catch (err) {
