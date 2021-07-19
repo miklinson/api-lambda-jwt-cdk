@@ -4,7 +4,7 @@ const docClient = new AWS.DynamoDB.DocumentClient();
 
 exports.handler = async function (event, context) {
     //Init variables
-    let ddbError = false;
+    let ddbError, parseError = false;
     let response, responseBody = {};
     let refreshToken;
     //Get refresh_token in body
