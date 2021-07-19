@@ -1,6 +1,6 @@
 exports.handler = async function (event, context) {
     
-    let animals = ["Lion", "Tiger", "Orca", "Black Mamba", "Puma", "Lobster", "Eagle", "Falcon", "Pigeon"];
+    let animals = ["Narwhal", "Buffalo", "Gorilla", "Orca", "Black Mamba", "Puma", "Lobster", "Eagle", "Falcon", "Pigeon", "Kangaroo", "Koala"];
     const random = Math.floor(Math.random() * animals.length);
     let responseBody = {
         animal: animals[random]
