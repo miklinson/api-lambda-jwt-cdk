@@ -8,7 +8,8 @@ exports.handler = async function (event, context) {
     let response = {};
     let responseBody = {};
     //Get refresh_token in body
-    const refreshToken = event.body['refresh_token'];
+    const body = JSON.parse(event.body);
+    const refreshToken = body.refresh_token;
     const params = {
         TableName: 'token',
         Key: {
@@ -38,7 +39,7 @@ exports.handler = async function (event, context) {
     responseBody = {
         access_token: accessToken,
         token_type: "Bearer",
-        expires_in: expireTime
+        expires_in: expires
     }
     response = {
         statusCode: 200,
