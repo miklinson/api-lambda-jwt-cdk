@@ -39,11 +39,11 @@ exports.handler = async function (event, context) {
     responseBody = {
         access_token: accessToken,
         token_type: "Bearer",
-        expires_in: expires
+        expires_in: expireTime
     }
     response = {
         statusCode: 200,
-        body: responseBody
+        body: JSON.stringify(responseBody)
     };
     return response;
 }
