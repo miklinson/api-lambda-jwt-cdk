@@ -17,9 +17,12 @@ exports.handler = async function (event, context) {
         refreshToken = body.refresh_token;
     } catch (err) {
         parseError = true;
+        responseBody = {
+            "message": err.message
+        }
         response = {
             statusCode: 400,
-            body: JSON.stringify(err)
+            body: JSON.stringify(responseBody)
         };
     }
     if(parseError) return response;
@@ -37,7 +40,7 @@ exports.handler = async function (event, context) {
         ddbError = true;
         response = {
             statusCode: 500,
-            body: JSON.stringify(err)
+            body: JSON.stringify(err.message)
         };
     }
     if (ddbError) return response;
