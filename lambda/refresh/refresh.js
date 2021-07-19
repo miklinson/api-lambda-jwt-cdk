@@ -6,12 +6,24 @@ exports.handler = async function (event, context) {
     //Init variables
     let ddbError = false;
     let verifyError = false;
+    let parseError = false;
     let jwtDecoded;
     let response = {};
     let responseBody = {};
+    let refreshToken;
     //Get refresh_token in body
-    const body = JSON.parse(event.body);
-    const refreshToken = body.refresh_token;
+    try {
+        const body = JSON.parse(event.body);
+        refreshToken = body.refresh_token;
+    } catch (err) {
+        parseError = true;
+        response = {
+            statusCode: 400,
+            body: JSON.stringify(err)
+        };
+    }
+    if(parseError) return response;
+    
     const params = {
         TableName: 'token',
         Key: {
