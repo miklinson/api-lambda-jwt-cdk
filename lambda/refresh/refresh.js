@@ -21,7 +21,7 @@ exports.handler = async function (event, context) {
             "message": err.message
         }
         response = {
-            statusCode: 400,
+            statusCode: 403,
             body: JSON.stringify(responseBody)
         };
     }
@@ -52,7 +52,7 @@ exports.handler = async function (event, context) {
                 "message": err.message
             }
             response = {
-                statusCode: 400,
+                statusCode: 403,
                 body: JSON.stringify(responseBody)
             };
         } else {
