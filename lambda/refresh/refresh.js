@@ -4,13 +4,9 @@ const docClient = new AWS.DynamoDB.DocumentClient();
 
 exports.handler = async function (event, context) {
     //Init variables
-    let ddbError = false;
-    let verifyError = false;
-    let parseError = false;
-    let jwtDecoded;
-    let response = {};
-    let responseBody = {};
-    let refreshToken;
+    let ddbError, verifyError, parseError = false;
+    let jwtDecoded, data, refreshToken;
+    let response, responseBody = {};
     //Get refresh_token in body
     try {
         const body = JSON.parse(event.body);
@@ -35,7 +31,11 @@ exports.handler = async function (event, context) {
     }
     //Try catch block
     try {
-        await getItem(params);
+        data = await getItem(params);
+        response = {
+            statusCode: 200,
+            body: JSON.stringify(data)
+        };
     } catch (err) {
         ddbError = true;
         response = {
@@ -44,6 +44,7 @@ exports.handler = async function (event, context) {
         };
     }
     if (ddbError) return response;
+    return response; 
     //If no error, get the sign details and then create new access token
     jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET, (err, decoded) => {
         if (err) {
@@ -82,7 +83,7 @@ exports.handler = async function (event, context) {
 
 async function getItem(params) {
     try {
-        await docClient.get(params).promise()
+       return await docClient.get(params).promise()
     } catch (err) {
         return err
     }
