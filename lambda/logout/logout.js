@@ -5,60 +5,67 @@ const docClient = new AWS.DynamoDB.DocumentClient();
 exports.handler = async function (event, context) {
     //Init variables
     let ddbError, parseError = false;
-    let response, responseBody = {};
-    let refreshToken;
+    let responseBody = {};
+    let refreshToken, item;
     //Get refresh_token in body
     try {
         const body = JSON.parse(event.body);
         refreshToken = body.refresh_token; //no refresh token found in body
+        if(!refreshToken) {
+         responseBody = {
+            message: "token not found"
+         };
+         return response(403, responseBody);   
+        }
     } catch (err) {
         parseError = true;
         responseBody = {
             "message": err.message
-        }
-        response = {
-            statusCode: 403,
-            body: JSON.stringify(responseBody)
         };
     }
-    if (parseError) return response;
+    if (parseError) return response(403, responseBody)
 
     //Init parameters
-    let params = {
+    const params = {
         TableName: 'token',
         Key: {
             refreshToken: refreshToken
-        }
+        },
+        ReturnValues: 'ALL_OLD',
+        ConditionExpression: 'attribute_exists(refreshToken)'
     };
     //Delete Item
     try {
+        console.log(params);
         await deleteItem(params);
     } catch (err) {
         ddbError = true;
-        response = {
-            statusCode: 500,
-            body: JSON.stringify(err.message)
+        responseBody = {
+            message: "token doesn't exist"
         };
     }
-    if (ddbError) return response; //cath error during DynamoDB action
+    if (ddbError) return response(400, responseBody); //cath error during DynamoDB action
     //If no error
     responseBody = {
-        "message": "token deleted!"
-    }
-    response = {
-        statusCode: 200,
-        body: JSON.stringify(responseBody)
+        item: `${item}`,
+        parseError: parseError,
+        refreshToken: `${refreshToken}`
     };
-    return response;
+    return response(200, responseBody);
+}
+
+function response(statusCode, responseBody){
+    return {
+        statusCode: statusCode,
+        body: JSON.stringify(responseBody)
+    }
 }
 
 async function deleteItem(params) {
-    try{
-        return await docClient.delete(params)
-        .promise()
-        .then(data => console.log(data.Attributes))
-        .catch(console.error)
-    } catch (err) {
-        return err;
-    } 
+    return await docClient.delete(params, (err) => {
+        if(err){
+                return err;
+            }
+    })
+    .promise();
 }
