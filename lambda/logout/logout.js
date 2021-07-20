@@ -46,7 +46,7 @@ exports.handler = async function (event, context) {
         "message": "token deleted!"
     }
     response = {
-        statusCode: 204,
+        statusCode: 200,
         body: JSON.stringify(responseBody)
     };
     return response;
@@ -54,9 +54,11 @@ exports.handler = async function (event, context) {
 
 async function deleteItem(params) {
     try{
-        docClient.delete(params).promise()
+        return await docClient.delete(params)
+        .promise()
+        .then(data => console.log(data.Attributes))
+        .catch(console.error)
     } catch (err) {
         return err;
-    }
-    
+    } 
 }
