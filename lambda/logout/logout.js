@@ -13,7 +13,7 @@ exports.handler = async function (event, context) {
         refreshToken = body.refresh_token; //no refresh token found in body
         if(!refreshToken) {
          responseBody = {
-            message: "token not found"
+            message: "JWT must be provided"
          };
          return response(403, responseBody);   
         }
@@ -41,7 +41,7 @@ exports.handler = async function (event, context) {
     } catch (err) {
         ddbError = true;
         responseBody = {
-            message: "token doesn't exist"
+            message: "refresh token not found"
         };
     }
     if (ddbError) return response(400, responseBody); //cath error during DynamoDB action
