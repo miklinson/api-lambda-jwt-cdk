@@ -47,9 +47,7 @@ exports.handler = async function (event, context) {
     if (ddbError) return response(400, responseBody); //cath error during DynamoDB action
     //If no error
     responseBody = {
-        item: `${item}`,
-        parseError: parseError,
-        refreshToken: `${refreshToken}`
+        message: "token deleted"
     };
     return response(200, responseBody);
 }
