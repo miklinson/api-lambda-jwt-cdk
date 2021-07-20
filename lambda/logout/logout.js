@@ -41,7 +41,7 @@ exports.handler = async function (event, context) {
     } catch (err) {
         ddbError = true;
         responseBody = {
-            message: "refresh token not found"
+            message: "refresh token doesn't exist"
         };
     }
     if (ddbError) return response(400, responseBody); //cath error during DynamoDB action

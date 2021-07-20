@@ -35,7 +35,7 @@ exports.handler = async function (event, context) {
         if (!data.hasOwnProperty('Item')) {
             noToken = true;
             responseBody = {
-                "message": "token doesn't exist"
+                "message": "refresh token doesn't exist"
             }
             response = {
                 statusCode: 403,
