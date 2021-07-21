@@ -16,12 +16,8 @@ exports.handler = async function (event, context) {
         responseBody = {
             "message": err.message
         }
-        response = {
-            statusCode: 403,
-            body: JSON.stringify(responseBody)
-        };
     }
-    if (parseError) return response;
+    if (parseError) return response(403, responseBody);
 
     const params = {
         TableName: 'token',
@@ -37,20 +33,15 @@ exports.handler = async function (event, context) {
             responseBody = {
                 "message": "refresh token doesn't exist"
             }
-            response = {
-                statusCode: 403,
-                body: JSON.stringify(responseBody)
-            };
         }
     } catch (err) {
         ddbError = true;
-        response = {
-            statusCode: 500,
-            body: JSON.stringify(err.message)
-        };
+        responseBody = {
+            message: err.message
+        }
     }
-    if (noToken) return response; //no refreshToken found in DynamoDB
-    if (ddbError) return response; //cath error during DynamoDB action
+    if (noToken) return response(403, responseBody); //no refreshToken found in DynamoDB
+    if (ddbError) return response(403, responseBody); //cath error during DynamoDB action
     //If no error, get the sign details and then create new access token
     jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET, (err, decoded) => {
         if (err) {
@@ -58,15 +49,11 @@ exports.handler = async function (event, context) {
             responseBody = {
                 "message": err.message
             }
-            response = {
-                statusCode: 403,
-                body: JSON.stringify(responseBody)
-            };
         } else {
             jwtDecoded = decoded.user;
         }
     });
-    if (verifyError) return response;
+    if (verifyError) return response(403, responseBody);
 
     //If JWT verification succeeded
     let user = { user: jwtDecoded };
@@ -80,11 +67,14 @@ exports.handler = async function (event, context) {
         token_type: "Bearer",
         expires_in: expireTime
     }
-    response = {
-        statusCode: 200,
+    return response(200, responseBody);
+}
+
+function response(statusCode, responseBody){
+    return {
+        statusCode: statusCode,
         body: JSON.stringify(responseBody)
-    };
-    return response;
+    }
 }
 
 async function getItem(params) {
