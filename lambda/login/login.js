@@ -5,7 +5,6 @@ const docClient = new AWS.DynamoDB.DocumentClient();
 exports.handler = async function (event, context) {
     //Init variables
     let ddbError = false;
-    let response = {};
     let responseBody = {};
     //Get Credentials
     let userCred = event.headers['Authorization'];
@@ -20,11 +19,7 @@ exports.handler = async function (event, context) {
         responseBody = {
             message: "Invalid Credentials!"
         }
-        response = {
-            statusCode: 401,
-            body: JSON.stringify(responseBody)
-        };
-        return response;
+        return response(200, responseBody);
     }
     //Prepare JWT details
     let user = { user: username };
@@ -51,12 +46,11 @@ exports.handler = async function (event, context) {
     } catch (err) {
         ddbError = true;
         console.log(err);
-        response = {
-            statusCode: 500,
-            body: JSON.stringify(err)
-        };
+        responseBody = {
+            message: err.message
+        }
     }
-    if(ddbError) return response;
+    if(ddbError) return response(403, responseBody);
 
     //If no error, response body
     responseBody = {
@@ -65,11 +59,14 @@ exports.handler = async function (event, context) {
         token_type: "Bearer",
         expires_in: expireTime
     };
-    response = {
-        statusCode: 200,
+    return response(200, responseBody);
+}
+
+function response(statusCode, responseBody){
+    return {
+        statusCode: statusCode,
         body: JSON.stringify(responseBody)
-    };
-    return response;
+    }
 }
 
 async function createItem(params) {

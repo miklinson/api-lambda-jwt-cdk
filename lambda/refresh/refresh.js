@@ -6,7 +6,7 @@ exports.handler = async function (event, context) {
     //Init variables
     let ddbError, verifyError, parseError, noToken = false;
     let jwtDecoded, data, refreshToken;
-    let response, responseBody = {};
+    let responseBody = {};
     //Get refresh_token in body
     try {
         const body = JSON.parse(event.body);
