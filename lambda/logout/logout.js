@@ -44,7 +44,7 @@ exports.handler = async function (event, context) {
             message: "refresh token doesn't exist"
         };
     }
-    if (ddbError) return response(400, responseBody); //cath error during DynamoDB action
+    if (ddbError) return response(403, responseBody); //cath error during DynamoDB action
     //If no error
     responseBody = {
         message: "token deleted"
