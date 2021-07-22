@@ -4,7 +4,6 @@ const docClient = new AWS.DynamoDB.DocumentClient();
 
 exports.handler = async function (event, context) {
     //Init variables
-    let ddbError, parseError = false;
     let responseBody = {};
     let refreshToken, item;
     //Get refresh_token in body
@@ -18,12 +17,11 @@ exports.handler = async function (event, context) {
          return response(403, responseBody);   
         }
     } catch (err) {
-        parseError = true;
         responseBody = {
             "message": err.message
         };
+        return response(403, responseBody)
     }
-    if (parseError) return response(403, responseBody)
 
     //Init parameters
     const params = {
@@ -39,12 +37,12 @@ exports.handler = async function (event, context) {
         console.log(params);
         await deleteItem(params);
     } catch (err) {
-        ddbError = true;
         responseBody = {
             message: "refresh token doesn't exist"
         };
+        response(403, responseBody); //cath error during DynamoDB action
     }
-    if (ddbError) return response(403, responseBody); //cath error during DynamoDB action
+    
     //If no error
     responseBody = {
         message: "token deleted"
