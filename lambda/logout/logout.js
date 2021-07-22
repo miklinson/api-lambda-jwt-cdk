@@ -5,17 +5,13 @@ const docClient = new AWS.DynamoDB.DocumentClient();
 exports.handler = async function (event, context) {
     //Init variables
     let responseBody = {};
-    let refreshToken, item;
+    let body;
     //Get refresh_token in body
     try {
-        const body = JSON.parse(event.body);
-        refreshToken = body.refresh_token; //no refresh token found in body
-        if(!refreshToken) {
-         responseBody = {
-            message: "JWT must be provided"
-         };
-         return response(403, responseBody);   
-        }
+        body = JSON.parse(event.body);
+        if (!body.refresh_token) {
+         throw new TypeError('refresh_token key not found');  //no refresh token found in body       
+        } 
     } catch (err) {
         responseBody = {
             "message": err.message
@@ -25,12 +21,12 @@ exports.handler = async function (event, context) {
     
     //Delete Item
     try {
-        await deleteItem(refreshToken);
+        await deleteItem(body.refresh_token);
     } catch (err) {
         responseBody = {
-            message: "refresh token doesn't exist"
+           message: "refresh token doesn't exist"
         };
-        response(403, responseBody); //cath error during DynamoDB action
+        return response(403, responseBody); //cath error during DynamoDB action        
     }
     
     //If no error
@@ -47,19 +43,18 @@ function response(statusCode, responseBody){
     }
 }
 
-async function deleteItem(refreshToken) {
+async function deleteItem(refresh) {
     const params = {
         TableName: 'token',
         Key: {
-            refreshToken: refreshToken
+            refreshToken: `${refresh}`
         },
         ReturnValues: 'ALL_OLD',
         ConditionExpression: 'attribute_exists(refreshToken)'
     };
-    return await docClient.delete(params, (err) => {
+    await docClient.delete(params, (err) => {
         if(err){
-                return err;
-            }
-    })
-    .promise();
+            console.error(err)
+        }
+    }).promise()
 }
