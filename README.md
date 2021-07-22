@@ -2,12 +2,15 @@
 The `cdk.json` file tells the CDK Toolkit how to execute your app. The build step is not required when using JavaScript.
 
 ## Deploy
+Bootstrap is required when deploying Lambdas
 ```
 $ npm install
+$ cdk bootsrap
 $ cdk deploy
 ```
 or
 ```
+$ cdk bootsrap --profile profile-name
 $ cdk deploy --profile profile-name
 ```
 
