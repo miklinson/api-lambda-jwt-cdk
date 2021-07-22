@@ -23,19 +23,13 @@ exports.handler = async function (event, context) {
     }
     //Prepare JWT details
     let user = { user: username };
-    let accessSecret = process.env.ACCESS_TOKEN_SECRET;
-    let refreshSecret = process.env.REFRESH_TOKEN_SECRET;
-    let expireTime = parseInt(process.env.EXPIRES_IN, 10); //convert string to int
-    let expires = { expiresIn: expireTime }
-    //Create an acess token
-    let accessToken = jwt.sign(user, accessSecret, expires);
-    //Create a refresh token
-    let refreshToken = jwt.sign(user, refreshSecret); // no expiration for refresh token
+    let token = await createToken(user); //returns { access, refresh, expireTime }
+
     //Save refresh token in DynamoDB
     const params = {
         TableName: 'token',
         Item: {
-            refreshToken: refreshToken,
+            refreshToken: token.refresh,
             user: username,
             createTime: Date.now(),
         }
@@ -54,12 +48,25 @@ exports.handler = async function (event, context) {
 
     //If no error, response body
     responseBody = {
-        access_token: accessToken,
-        refresh_token: refreshToken,
+        access_token: token.access,
+        refresh_token: token.refresh,
         token_type: "Bearer",
-        expires_in: expireTime
+        expires_in: token.expireTime
     };
     return response(200, responseBody);
+}
+
+async function createToken(user) {
+    let accessSecret = process.env.ACCESS_TOKEN_SECRET;
+    let refreshSecret = process.env.REFRESH_TOKEN_SECRET;
+    let expireTime = parseInt(process.env.EXPIRES_IN, 10); //convert string to int
+    let expires = { expiresIn: expireTime }
+    //Create an acess token
+    let access = jwt.sign(user, accessSecret, expires);
+    //Create a refresh token
+    let refresh = jwt.sign(user, refreshSecret);
+    
+    return { access, refresh, expireTime }
 }
 
 function response(statusCode, responseBody){
