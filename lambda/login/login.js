@@ -7,7 +7,7 @@ exports.handler = async function (event, context) {
     let responseBody = {};
 
     //Decode credentials
-    let credentials = await decode(event.headers['Authorization']);
+    let credentials = await decode(event.headers['Authorization']); //returns { username, password }
     
     //Check UN and PW
     if(credentials.username != 'admin' || credentials.password != 'hashedpw') {
