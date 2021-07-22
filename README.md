@@ -1,8 +1,15 @@
-# Welcome to your CDK JavaScript project!
-
-This is a blank project for JavaScript development with CDK.
-
+# JWT Auth using API Gateway + Lambda + Lambda Authorizer
 The `cdk.json` file tells the CDK Toolkit how to execute your app. The build step is not required when using JavaScript.
+
+## Deploy
+```
+$ npm install
+$ cdk deploy
+```
+or
+```
+$ cdk deploy --profile profile-name
+```
 
 ## Useful commands
 
