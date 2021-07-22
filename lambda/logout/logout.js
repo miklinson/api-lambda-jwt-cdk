@@ -22,20 +22,10 @@ exports.handler = async function (event, context) {
         };
         return response(403, responseBody)
     }
-
-    //Init parameters
-    const params = {
-        TableName: 'token',
-        Key: {
-            refreshToken: refreshToken
-        },
-        ReturnValues: 'ALL_OLD',
-        ConditionExpression: 'attribute_exists(refreshToken)'
-    };
+    
     //Delete Item
     try {
-        console.log(params);
-        await deleteItem(params);
+        await deleteItem(refreshToken);
     } catch (err) {
         responseBody = {
             message: "refresh token doesn't exist"
@@ -57,7 +47,15 @@ function response(statusCode, responseBody){
     }
 }
 
-async function deleteItem(params) {
+async function deleteItem(refreshToken) {
+    const params = {
+        TableName: 'token',
+        Key: {
+            refreshToken: refreshToken
+        },
+        ReturnValues: 'ALL_OLD',
+        ConditionExpression: 'attribute_exists(refreshToken)'
+    };
     return await docClient.delete(params, (err) => {
         if(err){
                 return err;
