@@ -26,25 +26,15 @@ exports.handler = async function (event, context) {
     let token = await createToken(user); //returns { access, refresh, expireTime }
 
     //Save refresh token in DynamoDB
-    const params = {
-        TableName: 'token',
-        Item: {
-            refreshToken: token.refresh,
-            user: username,
-            createTime: Date.now(),
-        }
-    }
-    
     try {
-        await createItem(params)
+        await createItem(token.refresh, username)
     } catch (err) {
-        ddbError = true;
         console.log(err);
         responseBody = {
             message: err.message
         }
+        return response(403, responseBody);
     }
-    if(ddbError) return response(403, responseBody);
 
     //If no error, response body
     responseBody = {
@@ -76,7 +66,15 @@ function response(statusCode, responseBody){
     }
 }
 
-async function createItem(params) {
+async function createItem(refreshToken, username) {
+    const params = {
+        TableName: 'token',
+        Item: {
+            refreshToken: refreshToken,
+            user: username,
+            createTime: Date.now(),
+        }
+    }
     try {
         await docClient.put(params).promise();
     } catch (err) {
