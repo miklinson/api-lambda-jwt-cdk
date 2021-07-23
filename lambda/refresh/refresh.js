@@ -4,7 +4,7 @@ const docClient = new AWS.DynamoDB.DocumentClient();
 
 exports.handler = async function (event, context) {
     //Init variables
-    let data, decoded, user, token;
+    let data, decoded, token;
     let responseBody = {};
     let body;
 
@@ -18,8 +18,7 @@ exports.handler = async function (event, context) {
         // verify JWT
         decoded = jwt.verify(body.refresh_token, process.env.REFRESH_TOKEN_SECRET);
         //If JWT verification succeeded
-        user = { user: decoded.user };
-        token = await createToken(user); // returns { access, expireTime }
+        token = await createToken(decoded.user); // returns { access, expireTime }
     } catch (err) {
         return response(403, err.message)
     }
@@ -32,7 +31,8 @@ exports.handler = async function (event, context) {
     return response(200, null, responseBody);
 }
 
-async function createToken(user){
+async function createToken(username){
+    let user = { user: username };
     let accessSecret = process.env.ACCESS_TOKEN_SECRET;
     let expireTime = parseInt(process.env.EXPIRES_IN, 10); //convert string to int
     let expires = { expiresIn: expireTime };
