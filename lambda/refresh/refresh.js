@@ -7,6 +7,7 @@ exports.handler = async function (event, context) {
     let ddbError, verifyError, parseError, noToken = false;
     let jwtDecoded, data, refreshToken;
     let responseBody = {};
+    let body, message;
     //Get refresh_token in body
     try {
         body = JSON.parse(event.body);
@@ -16,7 +17,7 @@ exports.handler = async function (event, context) {
     } catch (err) {
         return response(403, message="err.message")
     }
-    
+
     const params = {
         TableName: 'token',
         Key: {
