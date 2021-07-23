@@ -4,39 +4,32 @@ const docClient = new AWS.DynamoDB.DocumentClient();
 
 exports.handler = async function (event, context) {
     //Init variables
-    let responseBody = {};
-    let body;
+    let body, message;
     //Get refresh_token in body
     try {
         body = JSON.parse(event.body);
-        if (!body.refresh_token) {
-         throw new TypeError('refresh_token key not found');  //no refresh token found in body       
+        if (!body.refresh_token) { //no refresh token found in body
+         throw new TypeError('refresh_token key not found');         
         } 
     } catch (err) {
-        responseBody = {
-            "message": err.message
-        };
-        return response(403, responseBody)
+        return response(403, message="err.message")
     }
     
     //Delete Item
     try {
         await deleteItem(body.refresh_token);
-    } catch (err) {
-        responseBody = {
-           message: "refresh token doesn't exist"
-        };
-        return response(403, responseBody); //cath error during DynamoDB action        
+    } catch (err) { //cath error during DynamoDB deleteItem
+        return response(403, message="refresh token doesn't exist");         
     }
     
     //If no error
-    responseBody = {
-        message: "token deleted"
-    };
-    return response(200, responseBody);
+    return response(200, message="token deleted");
 }
 
-function response(statusCode, responseBody){
+function response(statusCode, message){
+    let responseBody = {
+            "message": `${message}`
+    };
     return {
         statusCode: statusCode,
         body: JSON.stringify(responseBody)
