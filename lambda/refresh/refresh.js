@@ -42,9 +42,8 @@ exports.handler = async function (event, context) {
 
     //If JWT verification succeeded
     let user = { user: jwtDecodedUsername };
-    let token = await createToken(user);
+    let token = await createToken(user); // returns { access, expireTime }
     
-
     responseBody = {
         access_token: token.access,
         token_type: "Bearer",
