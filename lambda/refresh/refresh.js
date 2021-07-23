@@ -15,7 +15,7 @@ exports.handler = async function (event, context) {
          throw new TypeError('refresh_token key not found');         
         } 
     } catch (err) {
-        return response(403, message="err.message")
+        return response(403, message=err.message)
     }
     
     // getItem in DynamoDB
