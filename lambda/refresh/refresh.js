@@ -9,16 +9,14 @@ exports.handler = async function (event, context) {
     let responseBody = {};
     //Get refresh_token in body
     try {
-        const body = JSON.parse(event.body);
-        refreshToken = body.refresh_token;
+        body = JSON.parse(event.body);
+        if (!body.refresh_token) { //no refresh token found in body
+         throw new TypeError('refresh_token key not found');         
+        } 
     } catch (err) {
-        parseError = true;
-        responseBody = {
-            "message": err.message
-        }
+        return response(403, message="err.message")
     }
-    if (parseError) return response(403, responseBody);
-
+    
     const params = {
         TableName: 'token',
         Key: {
