@@ -28,7 +28,7 @@ exports.handler = async function (event, context) {
 
 function response(statusCode, message){
     let responseBody = {
-            "message": `${message}`
+            message: `${message}`
     };
     return {
         statusCode: statusCode,
