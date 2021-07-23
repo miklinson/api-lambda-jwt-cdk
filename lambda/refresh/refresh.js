@@ -4,46 +4,26 @@ const docClient = new AWS.DynamoDB.DocumentClient();
 
 exports.handler = async function (event, context) {
     //Init variables
-    let verifyError, noToken = false;
-    let jwtDecodedUsername, data, jwtError;
+    let data, decoded, user, token;
     let responseBody = {};
-    let body, message;
-    //Get refresh_token in body
-    try {
-        body = JSON.parse(event.body);
-        if (!body.refresh_token) { //no refresh token found in body
-         throw new TypeError('refresh_token key not found');         
-        } 
-    } catch (err) {
-        return response(403, message=err.message)
-    }
-    
-    // getItem in DynamoDB
-    try {
-        data = await getItem(body.refresh_token);
-        if (!data.hasOwnProperty('Item')) {
-            noToken = true;
-        }
-    } catch (err) {
-        return response(403, err.message);
-    }
-    if (noToken) return response(403, message="refresh token doen't exist"); //no refreshToken found in DynamoDB
-    
-    //If no error, get the sign details and then create new access token
-    jwt.verify(body.refresh_token, process.env.REFRESH_TOKEN_SECRET, (err, decoded) => {
-        if (err) {
-            verifyError = true;
-            jwtError = err.message;
-        } else {
-            jwtDecodedUsername = decoded.user;
-        }
-    });
-    if (verifyError) return response(403, jwtError);
+    let body;
 
-    //If JWT verification succeeded
-    let user = { user: jwtDecodedUsername };
-    let token = await createToken(user); // returns { access, expireTime }
-    
+    try {
+        // Get event body and parse
+        body = JSON.parse(event.body);
+        if (!body.refresh_token) throw new TypeError("refresh_token key not found")
+        // getItem in DynamoDB
+        data = await getItem(body.refresh_token);
+        if (!data.hasOwnProperty('Item')) throw new TypeError("refresh token doen't exist")
+        // verify JWT
+        decoded = await jwt.verify(body.refresh_token, process.env.REFRESH_TOKEN_SECRET);
+        //If JWT verification succeeded
+        user = { user: decoded.user };
+        token = await createToken(user); // returns { access, expireTime }
+    } catch (err) {
+        return response(403, err.message)
+    }
+    // Finally if no error was catched
     responseBody = {
         access_token: token.access,
         token_type: "Bearer",
