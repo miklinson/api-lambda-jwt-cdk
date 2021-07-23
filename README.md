@@ -3,8 +3,16 @@ The `cdk.json` file tells the CDK Toolkit how to execute your app. The build ste
 
 ## Deploy
 Bootstrap is required when deploying Lambdas
+### Install
 ```
 $ npm install
+```
+Go to layers/{module}/nodejs
+```
+$ npm install
+```
+### Run
+```
 $ cdk bootsrap
 $ cdk deploy
 ```
