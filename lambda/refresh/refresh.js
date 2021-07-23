@@ -5,7 +5,7 @@ const docClient = new AWS.DynamoDB.DocumentClient();
 exports.handler = async function (event, context) {
     //Init variables
     let ddbError, verifyError, parseError, noToken = false;
-    let jwtDecoded, data, refreshToken;
+    let jwtDecoded, data, refreshToken, jwtError;
     let responseBody = {};
     let body, message;
     //Get refresh_token in body
@@ -17,42 +17,28 @@ exports.handler = async function (event, context) {
     } catch (err) {
         return response(403, message="err.message")
     }
-
-    const params = {
-        TableName: 'token',
-        Key: {
-            refreshToken: refreshToken
-        }
-    }
-    //Try catch block
+    
+    // getItem in DynamoDB
     try {
-        data = await getItem(params);
+        data = await getItem(body.refresh_token);
         if (!data.hasOwnProperty('Item')) {
             noToken = true;
-            responseBody = {
-                "message": "refresh token doesn't exist"
-            }
         }
     } catch (err) {
-        ddbError = true;
-        responseBody = {
-            message: err.message
-        }
+        return response(403, err.message);
     }
-    if (noToken) return response(403, responseBody); //no refreshToken found in DynamoDB
-    if (ddbError) return response(403, responseBody); //cath error during DynamoDB action
+    if (noToken) return response(403, message="refresh token doen't exist"); //no refreshToken found in DynamoDB
+    
     //If no error, get the sign details and then create new access token
-    jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET, (err, decoded) => {
+    jwt.verify(body.refresh_token, process.env.REFRESH_TOKEN_SECRET, (err, decoded) => {
         if (err) {
             verifyError = true;
-            responseBody = {
-                "message": err.message
-            }
+            jwtError = err.message;
         } else {
             jwtDecoded = decoded.user;
         }
     });
-    if (verifyError) return response(403, responseBody);
+    if (verifyError) return response(403, jwtError);
 
     //If JWT verification succeeded
     let user = { user: jwtDecoded };
@@ -66,22 +52,29 @@ exports.handler = async function (event, context) {
         token_type: "Bearer",
         expires_in: expireTime
     }
-    return response(200, responseBody);
+    return response(200, null, responseBody);
 }
 
-function response(statusCode, responseBody){
+function response(statusCode, message = null, respBody = null){
+    if(message != null){
+        respBody = {
+            message: `${message}`
+        }    
+    }
+    
     return {
         statusCode: statusCode,
-        body: JSON.stringify(responseBody)
+        body: JSON.stringify(respBody)
     }
 }
 
-async function getItem(params) {
-    // try {
-    //     return await docClient.get(params).promise()
-    // } catch (err) {
-    //     return err
-    // }
+async function getItem(refreshToken) {
+    const params = {
+        TableName: 'token',
+        Key: {
+            refreshToken: refreshToken
+        }
+    }
     return await docClient.get(params, (err) => {
         if(err){
             console.error(err)
