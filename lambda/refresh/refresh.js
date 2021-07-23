@@ -77,9 +77,14 @@ function response(statusCode, responseBody){
 }
 
 async function getItem(params) {
-    try {
-        return await docClient.get(params).promise()
-    } catch (err) {
-        return err
-    }
+    // try {
+    //     return await docClient.get(params).promise()
+    // } catch (err) {
+    //     return err
+    // }
+    return await docClient.get(params, (err) => {
+        if(err){
+            console.error(err)
+        }
+    }).promise()
 }
