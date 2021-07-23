@@ -16,7 +16,7 @@ exports.handler = async function (event, context) {
         data = await getItem(body.refresh_token);
         if (!data.hasOwnProperty('Item')) throw new TypeError("refresh token doen't exist")
         // verify JWT
-        decoded = await jwt.verify(body.refresh_token, process.env.REFRESH_TOKEN_SECRET);
+        decoded = jwt.verify(body.refresh_token, process.env.REFRESH_TOKEN_SECRET);
         //If JWT verification succeeded
         user = { user: decoded.user };
         token = await createToken(user); // returns { access, expireTime }
