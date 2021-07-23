@@ -8,18 +8,11 @@ exports.handler = async function (event, context) {
     //Get refresh_token in body
     try {
         body = JSON.parse(event.body);
-        if (!body.refresh_token) { //no refresh token found in body
-         throw new TypeError('refresh_token key not found');         
-        } 
-    } catch (err) {
-        return response(403, message="err.message")
-    }
-    
-    //Delete Item
-    try {
+        if (!body.refresh_token) throw new TypeError('refresh_token key not found / empty');
         await deleteItem(body.refresh_token);
-    } catch (err) { //cath error during DynamoDB deleteItem
-        return response(403, message="refresh token doesn't exist");         
+    } catch (err) {
+        if(err.message == 'The conditional request failed') return response(403, "refresh token doesn't exist")
+        return response(403, message=err.message)
     }
     
     //If no error
