@@ -1,4 +1,5 @@
 {
+  "load_balancer_endpoint": "http://nodej-nodej-1jqb8pkjnd7jb-1391717725.ap-southeast-2.elb.amazonaws.com",
   "hosted-zone:account=683044287129:domainName=uconworkspace.com:region=ap-southeast-2": {
     "Id": "/hostedzone/Z0858096ZNFNGDKGM6IV",
     "Name": "uconworkspace.com."
