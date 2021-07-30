@@ -24,6 +24,14 @@ async function remove_61(number){
     return number
 }
 
-async function add_brackets($number){
-    
+async function add_brackets(number){
+    //remove 61 if it's present
+    number = remove_61(number)
+    //add spaces to mobiles and specialties
+    if (number.length == 10 && (number.substr(0,2) == "18" || number.substr(0,2) == "04" || number.substr(0,2) == "13")){
+        // 1300/1800/04
+        number = number.substr(0,4) + " " + number.substr(4,3) + " " + number.substr(7) 
+    }
+    else number = "(" + number.substr(0,2) + ") " + number.substr + " " + number.substr(6)
+    return number
 }
