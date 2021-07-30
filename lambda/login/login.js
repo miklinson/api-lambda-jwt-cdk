@@ -32,7 +32,7 @@ exports.handler = async function (event, context) {
     
     //Decode credentials
     let credentials = await decode(event.headers['Authorization']); //returns { username, password }
-    
+
     //Check UN and PW
     let hashedpw = '$2y$10$ha5pQfotz6zwpDLuZ1GgyOxfPSUmxE6NF1MN3JVuqHEWm5bXy0nAu';
     let compare = bcryptjs.compareSync(credentials.password, hashedpw)
@@ -61,8 +61,6 @@ exports.handler = async function (event, context) {
 
     //If no error, response body
     responseBody = {
-        compare: compare,
-        data: data,
         access_token: token.access,
         refresh_token: token.refresh,
         token_type: "Bearer",
