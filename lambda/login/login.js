@@ -25,6 +25,8 @@ exports.handler = async function (event, context) {
         //Check PW if matched
         let match = bcryptjs.compareSync(postBody.password, data.password)
         if(!match) throw new Error('invalid credentials')
+        //Status ID must be 3
+        if(data.status_id != 3) throw new Error('please check account status')
         //Prepare JWT details
         let email = { email: postBody.email };
         token = await createToken(email); //returns { access, refresh, expireTime }
