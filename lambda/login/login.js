@@ -1,16 +1,43 @@
 const jwt = require('jsonwebtoken');
+const bcryptjs = require('bcryptjs');
+const mysql = require('mysql'); 
 const AWS = require('aws-sdk');
 const docClient = new AWS.DynamoDB.DocumentClient();
+
+
+var mySqlPool  = mysql.createPool({
+  host: process.env.DB_HOST,
+  user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
+  database : process.env.DB_NAME,
+});
 
 exports.handler = async function (event, context) {
     //Init variables
     let responseBody = {};
-
+    let data;
+    
+    // MySQL
+    context.callbackWaitsForEmptyEventLoop = false; //prevent lambda timeout
+    mySqlPool.getConnection(function(err, connection) {
+        if(err)throw err;
+        connection.query('SELECT * FROM memberdata limit 1', function (err, results, fields) {
+        // And done with the connection.
+        connection.release();
+        // Handle error after the release.
+        if (err) throw err;
+        else data = results[0];
+        });
+    }); 
+    
     //Decode credentials
     let credentials = await decode(event.headers['Authorization']); //returns { username, password }
     
     //Check UN and PW
-    if(credentials.username != 'admin' || credentials.password != 'hashedpw') {
+    let hashedpw = '$2y$10$ha5pQfotz6zwpDLuZ1GgyOxfPSUmxE6NF1MN3JVuqHEWm5bXy0nAu';
+    let compare = bcryptjs.compareSync(credentials.password, hashedpw)
+    if(!compare) {
+    //if(credentials.username != 'admin' || credentials.password != 'hashedpw') {
         responseBody = {
             message: "Invalid Credentials!"
         }
@@ -34,6 +61,8 @@ exports.handler = async function (event, context) {
 
     //If no error, response body
     responseBody = {
+        compare: compare,
+        data: data,
         access_token: token.access,
         refresh_token: token.refresh,
         token_type: "Bearer",
@@ -87,3 +116,4 @@ async function createItem(refreshToken, username) {
         return err;
     }
 }
+
