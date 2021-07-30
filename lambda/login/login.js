@@ -29,7 +29,7 @@ exports.handler = async function (event, context) {
         let email = { email: postBody.email };
         token = await createToken(email); //returns { access, refresh, expireTime }
         //Save refresh token in DynamoDB
-        await createItem(token.refresh, email)
+        await createItem(token.refresh, postBody.email)
     } catch (err) {
         console.log(err);
         responseBody = {

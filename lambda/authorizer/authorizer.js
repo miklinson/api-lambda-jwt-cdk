@@ -12,7 +12,7 @@ exports.handler = async function (event, context) {
             errorMessage = err.message;
             auth = 'Deny';
         } else {
-            decoded ? principal = decoded.user : principal = 'user';
+            decoded ? principal = decoded.email : principal = 'email';
             auth = 'Allow';
         }
     });
