@@ -31,8 +31,8 @@ exports.handler = async function (event, context) {
     return response(200, null, responseBody);
 }
 
-async function createToken(email){
-    let email = { email: email };
+async function createToken(email_address){
+    let email = { email: email_address };
     let accessSecret = process.env.ACCESS_TOKEN_SECRET;
     let expireTime = parseInt(process.env.EXPIRES_IN, 10); //convert string to int
     let expires = { expiresIn: expireTime };
