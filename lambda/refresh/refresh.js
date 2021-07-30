@@ -32,11 +32,11 @@ exports.handler = async function (event, context) {
 }
 
 async function createToken(email){
-    let user = { user: email };
+    let email = { email: email };
     let accessSecret = process.env.ACCESS_TOKEN_SECRET;
     let expireTime = parseInt(process.env.EXPIRES_IN, 10); //convert string to int
     let expires = { expiresIn: expireTime };
-    let access = jwt.sign(user, accessSecret, expires);
+    let access = jwt.sign(email, accessSecret, expires);
     
     return { access, expireTime }
 }
