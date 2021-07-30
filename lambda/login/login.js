@@ -15,42 +15,21 @@ var mySqlPool  = mysql.createPool({
 exports.handler = async function (event, context) {
     //Init variables
     let responseBody = {};
-    let data;
+    let postBody = JSON.parse(event.body)
+    let data, token;
     
-    // MySQL
     context.callbackWaitsForEmptyEventLoop = false; //prevent lambda timeout
-    mySqlPool.getConnection(function(err, connection) {
-        if(err)throw err;
-        connection.query('SELECT * FROM memberdata limit 1', function (err, results, fields) {
-        // And done with the connection.
-        connection.release();
-        // Handle error after the release.
-        if (err) throw err;
-        else data = results[0];
-        });
-    }); 
     
-    //Decode credentials
-    let credentials = await decode(event.headers['Authorization']); //returns { username, password }
-
-    //Check UN and PW
-    let hashedpw = '$2y$10$ha5pQfotz6zwpDLuZ1GgyOxfPSUmxE6NF1MN3JVuqHEWm5bXy0nAu';
-    let compare = bcryptjs.compareSync(credentials.password, hashedpw)
-    if(!compare) {
-    //if(credentials.username != 'admin' || credentials.password != 'hashedpw') {
-        responseBody = {
-            message: "Invalid Credentials!"
-        }
-        return response(200, responseBody);
-    }
-    
-    //Prepare JWT details
-    let user = { user: credentials.username };
-    let token = await createToken(user); //returns { access, refresh, expireTime }
-
-    //Save refresh token in DynamoDB
     try {
-        await createItem(token.refresh, credentials.username)
+        data = await getDbCreds(postBody.email, postBody.member_id)
+        //Check PW if matched
+        let match = bcryptjs.compareSync(postBody.password, data.password)
+        if(!match) throw new Error('invalid credentials')
+        //Prepare JWT details
+        let email = { email: postBody.email };
+        token = await createToken(email); //returns { access, refresh, expireTime }
+        //Save refresh token in DynamoDB
+        await createItem(token.refresh, email)
     } catch (err) {
         console.log(err);
         responseBody = {
@@ -69,15 +48,32 @@ exports.handler = async function (event, context) {
     return response(200, responseBody);
 }
 
-async function createToken(user) {
+async function getDbCreds(email, member_id){
+    return new Promise(function(resolve, reject) {
+        mySqlPool.getConnection(function(error, connection) {
+            if(error) reject(error)
+            connection.query(`SELECT first_name, status_id, password FROM memberdata where email_address='${email}' AND id=${member_id}`, function (err, results, fields) {
+                // And done with the connection.
+                connection.release();
+                // Handle error after the release.
+                if (err) reject(err)
+                else { 
+                    resolve(results[0])
+                }
+            });
+        });
+    })
+}
+
+async function createToken(email) {
     let accessSecret = process.env.ACCESS_TOKEN_SECRET;
     let refreshSecret = process.env.REFRESH_TOKEN_SECRET;
     let expireTime = parseInt(process.env.EXPIRES_IN, 10); //convert string to int
     let expires = { expiresIn: expireTime }
     //Create an acess token
-    let access = jwt.sign(user, accessSecret, expires);
+    let access = jwt.sign(email, accessSecret, expires);
     //Create a refresh token
-    let refresh = jwt.sign(user, refreshSecret);
+    let refresh = jwt.sign(email, refreshSecret);
     
     return { access, refresh, expireTime }
 }
@@ -89,21 +85,12 @@ function response(statusCode, responseBody){
     }
 }
 
-async function decode(userCred){
-    let replaced = userCred && userCred.replace('Basic ', '');
-    //Decode the credentials
-    let data = new Buffer.from(replaced, 'base64').toString('ascii');
-    let username = data.split(':')[0];
-    let password = data.split(':')[1];
-    return { username, password }
-}
-
-async function createItem(refreshToken, username) {
+async function createItem(refreshToken, email) {
     const params = {
         TableName: 'token',
         Item: {
             refreshToken: refreshToken,
-            user: username,
+            email: email,
             createTime: Date.now(),
         }
     }
@@ -114,4 +101,3 @@ async function createItem(refreshToken, username) {
         return err;
     }
 }
-
