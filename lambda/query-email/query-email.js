@@ -1,8 +1,16 @@
 const mysql = require('mysql');
 
 exports.handler = async function (event, context) {
+    let number;
+    postBody = JSON.stringify(event.body)
+    spec_number = add_brackets(postBody.specialty_number)
+    spec_number = spec_number.substr(0,4) + ' xxx x' + spec_number.substr(-2)
+    did_number = add_brackets(postBody.did)
+    did_number = did_number.substr(0,4) + ' xxxx x' + did_number.substr(-3)
+
     responseBody = {
-        message: JSON.stringify(event.body)
+        specialty_number: spec_number,
+        did_number: did_number 
     }
     return response(200, responseBody);
 }
