@@ -4,7 +4,6 @@ exports.handler = async function (event, context) {
     const random = Math.floor(Math.random() * animals.length);
     let responseBody = {
         animal: animals[random],
-        email: event.requestContext.authorizer.principalId
     };
     let response = {
         statusCode: 200,
