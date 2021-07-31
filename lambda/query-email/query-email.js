@@ -10,6 +10,7 @@ var mySqlPool  = mysql.createPool({
 exports.handler = async function (event, context) {
     let number,data;
     let postBody = JSON.parse(event.body)
+    console.log(postBody.email)
     let responseBody =[]
     let item, responseError = {}
     let obscured = []
