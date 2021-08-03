@@ -65,7 +65,7 @@ async function transform(number, type){
         number = number.substr(0,4) + ' xxx x' + number.substr(-2)    
     } else if (type == 'dids') {
         number = await add_brackets(number)
-        number = number.substr(0,4) + ' xxx x' + number.substr(-3)    
+        number = number.substr(0,4) + ' xxxx x' + number.substr(-3)    
     }
     return number
     
