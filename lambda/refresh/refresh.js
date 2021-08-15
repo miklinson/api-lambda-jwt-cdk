@@ -18,7 +18,7 @@ exports.handler = async function (event, context) {
         // verify JWT
         decoded = jwt.verify(body.refresh_token, process.env.REFRESH_TOKEN_SECRET);
         //If JWT verification succeeded
-        token = await createToken(decoded.email); // returns { access, expireTime }
+        token = await createToken(decoded.email, decoded.id); // returns { access, expireTime }
     } catch (err) {
         return response(403, err.message)
     }
@@ -31,12 +31,12 @@ exports.handler = async function (event, context) {
     return response(200, null, responseBody);
 }
 
-async function createToken(email_address){
-    let email = { email: email_address };
+async function createToken(email_address, memberId){
+    let claims = { email: email_address, id: memberId };
     let accessSecret = process.env.ACCESS_TOKEN_SECRET;
     let expireTime = parseInt(process.env.EXPIRES_IN, 10); //convert string to int
     let expires = { expiresIn: expireTime };
-    let access = jwt.sign(email, accessSecret, expires);
+    let access = jwt.sign(claims, accessSecret, expires);
     
     return { access, expireTime }
 }

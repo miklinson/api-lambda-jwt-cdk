@@ -28,10 +28,10 @@ exports.handler = async function (event, context) {
         //Status ID must be 3
         if(data.status_id != 3) throw new Error('please check account status')
         //Prepare JWT details
-        let email = { email: postBody.email };
-        token = await createToken(email); //returns { access, refresh, expireTime }
+        let claims = { email: postBody.email, id: postBody.member_id };
+        token = await createToken(claims); //returns { access, refresh, expireTime }
         //Save refresh token in DynamoDB
-        await createItem(token.refresh, postBody.email)
+        await createItem(token.refresh, postBody.email, postBody.member_id)
     } catch (err) {
         console.log(err);
         responseBody = {
@@ -67,15 +67,15 @@ async function getDbCreds(email, member_id){
     })
 }
 
-async function createToken(email) {
+async function createToken(claims) {
     let accessSecret = process.env.ACCESS_TOKEN_SECRET;
     let refreshSecret = process.env.REFRESH_TOKEN_SECRET;
     let expireTime = parseInt(process.env.EXPIRES_IN, 10); //convert string to int
     let expires = { expiresIn: expireTime }
     //Create an acess token
-    let access = jwt.sign(email, accessSecret, expires);
+    let access = jwt.sign(claims, accessSecret, expires);
     //Create a refresh token
-    let refresh = jwt.sign(email, refreshSecret);
+    let refresh = jwt.sign(claims, refreshSecret);
     
     return { access, refresh, expireTime }
 }
@@ -87,12 +87,13 @@ function response(statusCode, responseBody){
     }
 }
 
-async function createItem(refreshToken, email) {
+async function createItem(refreshToken, email, id) {
     const params = {
         TableName: 'token',
         Item: {
             refreshToken: refreshToken,
             email: email,
+            id: id,
             createTime: Date.now(),
         }
     }
